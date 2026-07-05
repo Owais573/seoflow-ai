@@ -42,6 +42,12 @@ export const api = {
         return response.json();
     },
 
+    async getWorkflowState(id: number) {
+        const response = await fetch(`${API_BASE_URL}/workflows/${id}/state`);
+        if (!response.ok) throw new Error("Failed to fetch workflow state");
+        return response.json();
+    },
+
     async startWorkflow(id: number) {
         const response = await fetch(`${API_BASE_URL}/workflows/${id}/start`, { method: "POST" });
         if (!response.ok) throw new Error("Failed to start workflow");

@@ -46,6 +46,15 @@ async def get_workflow(workflow_id: int, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Workflow not found")
     return workflow
 
+@router.get("/{workflow_id}/state")
+async def get_workflow_state(workflow_id: int):
+    from workflows.graph import graph
+    config = {"configurable": {"thread_id": str(workflow_id)}}
+    state = await graph.aget_state(config)
+    if not state or not state.values:
+        raise HTTPException(status_code=404, detail="State not found")
+    return state.values
+
 @router.post("/{workflow_id}/start")
 async def start_workflow(workflow_id: int, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db)):
     workflow = await get_workflow(workflow_id, db)
@@ -72,18 +81,21 @@ async def start_workflow(workflow_id: int, background_tasks: BackgroundTasks, db
                 "progress": 10,
                 "status": "RESEARCH"
             }
-            # We would capture updates from astream_events to write to DB,
-            # but for MVP we will let the nodes update state, and then we will update DB at the end
-            # Actually, we can update DB right here after graph finishes.
-            final_state = await graph.ainvoke(initial_state, config)
-            
-            # Update DB with final_state
-            wf_res = await local_db.execute(select(Workflow).where(Workflow.id == workflow_id))
-            wf = wf_res.scalar_one_or_none()
-            wf.status = WorkflowStatus.PENDING_REVIEW
-            wf.current_step = "Waiting for Human Review"
-            wf.progress = 90
-            await local_db.commit()
+            # We will use astream to capture intermediate state updates
+            print(f"[Workflow {workflow_id}] Starting AI agents...")
+            async for event in graph.astream(initial_state, config, stream_mode="values"):
+                print(f"[Workflow {workflow_id}] Agent finished. step='{event.get('current_step')}', progress={event.get('progress')}%")
+                # Update DB with latest state
+                wf_res = await local_db.execute(select(Workflow).where(Workflow.id == workflow_id))
+                wf = wf_res.scalar_one_or_none()
+                if wf:
+                    if "status" in event and event["status"] in [s.value for s in WorkflowStatus]:
+                        wf.status = WorkflowStatus(event["status"])
+                    if "current_step" in event:
+                        wf.current_step = event["current_step"]
+                    if "progress" in event:
+                        wf.progress = event["progress"]
+                    await local_db.commit()
 
     background_tasks.add_task(run_graph)
     
@@ -97,23 +109,24 @@ async def stream_workflow_progress(workflow_id: int, db: AsyncSession = Depends(
         # or LangGraph's astream_events.
         previous_progress = -1
         while True:
-            # Re-fetch the workflow
-            result = await db.execute(select(Workflow).where(Workflow.id == workflow_id))
-            workflow = result.scalar_one_or_none()
-            if not workflow:
-                yield {"event": "error", "data": "Workflow not found"}
-                break
-                
-            if workflow.progress != previous_progress:
-                yield {
-                    "event": "message",
-                    "data": f'{{"progress": {workflow.progress}, "status": "{workflow.status.value}", "current_step": "{workflow.current_step}"}}'
-                }
-                previous_progress = workflow.progress
-                
-            if workflow.status in [WorkflowStatus.PENDING_REVIEW, WorkflowStatus.PUBLISHED, WorkflowStatus.FAILED]:
-                break
-                
+            # Re-fetch the workflow in a fresh session to avoid stale SQLAlchemy caching
+            async with get_db_context() as local_db:
+                result = await local_db.execute(select(Workflow).where(Workflow.id == workflow_id))
+                workflow = result.scalar_one_or_none()
+                if not workflow:
+                    yield {"event": "error", "data": "Workflow not found"}
+                    break
+                    
+                if workflow.progress != previous_progress:
+                    yield {
+                        "event": "message",
+                        "data": f'{{"progress": {workflow.progress}, "status": "{workflow.status.value}", "current_step": "{workflow.current_step}"}}'
+                    }
+                    previous_progress = workflow.progress
+                    
+                if workflow.status in [WorkflowStatus.PENDING_REVIEW, WorkflowStatus.PUBLISHED, WorkflowStatus.FAILED]:
+                    break
+                    
             await asyncio.sleep(2) # Poll every 2 seconds
             
     return EventSourceResponse(event_generator())

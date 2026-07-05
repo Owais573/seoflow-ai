@@ -9,6 +9,13 @@ export default function WorkflowDetails() {
   const params = useParams();
   const workflowId = params.id as string;
   const [workflow, setWorkflow] = useState<Workflow | null>(null);
+  
+  // Review state
+  const [workflowState, setWorkflowState] = useState<any>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDesc, setEditDesc] = useState("");
+  const [editContent, setEditContent] = useState("");
+  const [editPrompt, setEditPrompt] = useState("");
 
   useEffect(() => {
     // Fetch initial workflow details
@@ -46,17 +53,28 @@ export default function WorkflowDetails() {
     return () => eventSource.close();
   }, [workflowId]);
 
+  useEffect(() => {
+     if (workflow?.status === "PENDING_REVIEW" && !workflowState) {
+         api.getWorkflowState(Number(workflowId)).then(state => {
+             setWorkflowState(state);
+             setEditTitle(state.seo_metadata?.title || "");
+             setEditDesc(state.seo_metadata?.description || "");
+             setEditContent(state.draft_content || "");
+             setEditPrompt(state.media_prompt || "");
+         }).catch(console.error);
+     }
+  }, [workflow?.status, workflowId, workflowState]);
+
   const [approving, setApproving] = useState(false);
 
   const handleApprove = async () => {
     setApproving(true);
     try {
         await api.approveWorkflow(Number(workflowId), {
-            // For MVP, we send empty edits (accepting AI defaults)
-            title: "",
-            meta_description: "",
-            content: "",
-            media_prompt: ""
+            title: editTitle,
+            meta_description: editDesc,
+            content: editContent,
+            media_prompt: editPrompt
         });
         // The SSE stream should technically have been closed, but if we resume it or poll, we can get updates.
         // For MVP, we'll just alert and let the SSE stream (if still open) or manual refresh catch it.
@@ -110,6 +128,30 @@ export default function WorkflowDetails() {
             <div className="mt-8 p-6 bg-yellow-50 border border-yellow-200 rounded-lg">
                 <h3 className="text-xl font-bold text-yellow-800 mb-4">Action Required: Human Review</h3>
                 <p className="mb-4">The AI agents have completed drafting your content and generated media prompts. Please review the output and provide final approval.</p>
+                
+                {workflowState ? (
+                    <div className="space-y-4 mb-6">
+                        <div>
+                            <label className="block text-sm font-medium mb-1">SEO Title</label>
+                            <input className="w-full border p-2 rounded" value={editTitle} onChange={e => setEditTitle(e.target.value)} />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Meta Description</label>
+                            <textarea className="w-full border p-2 rounded" rows={2} value={editDesc} onChange={e => setEditDesc(e.target.value)} />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Draft Content (Markdown/HTML)</label>
+                            <textarea className="w-full border p-2 rounded font-mono text-sm" rows={10} value={editContent} onChange={e => setEditContent(e.target.value)} />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Featured Image Prompt</label>
+                            <textarea className="w-full border p-2 rounded" rows={2} value={editPrompt} onChange={e => setEditPrompt(e.target.value)} />
+                        </div>
+                    </div>
+                ) : (
+                    <div className="mb-6 italic text-gray-500">Loading generated content for review...</div>
+                )}
+
                 <div className="flex space-x-4">
                     <Button onClick={handleApprove} disabled={approving} className="bg-green-600 hover:bg-green-700">
                         {approving ? "Publishing..." : "Approve & Publish"}
