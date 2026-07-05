@@ -75,13 +75,13 @@ async def get_monitoring_stats(db: AsyncSession = Depends(get_db)):
 
     # Calculate system latency (average workflow total execution time)
     wf_latencies = []
-    for wf in workflows:
-        # Find first and last log for this workflow
-        wf_logs = [l for l in logs if l.workflow_id == wf.id]
-        if wf_logs:
-            start = wf_logs[0].timestamp
-            end = wf_logs[-1].timestamp
-            wf_latencies.append((end - start).total_seconds())
+    for wf_id, agents in wf_agent_times.items():
+        wf_total_time = 0
+        for agent, times in agents.items():
+            if "start" in times and "end" in times:
+                wf_total_time += (times["end"] - times["start"]).total_seconds()
+        if wf_total_time > 0:
+            wf_latencies.append(wf_total_time)
 
     avg_system_latency = sum(wf_latencies) / len(wf_latencies) if wf_latencies else 0
 
