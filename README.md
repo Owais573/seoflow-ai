@@ -178,6 +178,7 @@ npm run dev
 ---
 
 ## 6. Recent Enhancements (Changelog)
+- **Premium B2B SaaS UI/UX Overhaul**: Completely redesigned the frontend to feature a sleek, modern monochrome aesthetic (inspired by Vercel/Linear). Stripped out generic neon gradients and replaced them with high-contrast slate components, frosted glassmorphism (backdrop-blur), and elegant neutral focus rings. Added a seamless Light/Dark mode toggle (powered by `next-themes`) embedded in a persistent sticky navigation bar.
 - **Advanced Publishing (Markdown to HTML & Categories)**: Integrated the `markdown` library to automatically render the AI's drafts into pristine HTML before sending to WordPress. Posts are automatically tagged under an "AI Articles" category, and redundant H1 titles are stripped from the markdown to ensure clean WordPress previews.
 - **Featured Image Uploads**: Built a new `/api/workflows/{id}/upload-image` endpoint. Users can now easily upload a DALL-E/Midjourney generated image via a modern drag-and-drop file upload zone. It features instant visual image previews and automatically attaches the image as the `featured_media` to the WordPress post.
 - **Enhanced Review & Publishing UX**: The native browser `alert()` popups were replaced with dynamic, inline loading states (e.g., "Uploading Image...", "Publishing to WordPress..."). Added a seamless "← Back to Dashboard" button and a post-publish success banner providing a direct "View Post" link to the live article on WordPress.
