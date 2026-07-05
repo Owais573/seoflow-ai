@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { api, Workflow, API_BASE_URL } from "@/services/api";
+import { api, Workflow, WorkflowLog, API_BASE_URL } from "@/services/api";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Loader2, ArrowLeft } from "lucide-react";
+import { ExternalLink, Loader2, ArrowLeft, Copy, Check } from "lucide-react";
 
 export default function WorkflowDetails() {
   const params = useParams();
@@ -20,15 +20,36 @@ export default function WorkflowDetails() {
   const [editPrompt, setEditPrompt] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [statusMsg, setStatusMsg] = useState("");
+  
+  // Terminal logs state
+  const [logs, setLogs] = useState<WorkflowLog[]>([]);
+  const logsEndRef = useRef<HTMLDivElement>(null);
+  const [copiedLogs, setCopiedLogs] = useState(false);
+
+  const handleCopyLogs = () => {
+    const textToCopy = logs.map(l => `[${new Date(l.timestamp).toLocaleTimeString([], { hour12: false })}] [${l.agent}] ${l.action}`).join('\n');
+    navigator.clipboard.writeText(textToCopy);
+    setCopiedLogs(true);
+    setTimeout(() => setCopiedLogs(false), 2000);
+  };
+
+  const scrollToBottom = () => {
+      logsEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   useEffect(() => {
-    // Fetch initial workflow details
+      scrollToBottom();
+  }, [logs]);
+
+  useEffect(() => {
+    // Fetch initial workflow details and historical logs
     api.getWorkflow(Number(workflowId)).then(setWorkflow).catch(console.error);
+    api.getWorkflowLogs(Number(workflowId)).then(setLogs).catch(console.error);
 
     // Setup SSE for real-time progress
     const eventSource = new EventSource(`${API_BASE_URL}/workflows/${workflowId}/stream`);
     
-    eventSource.onmessage = (event) => {
+    eventSource.addEventListener("message", (event) => {
       try {
         const data = JSON.parse(event.data);
         setWorkflow(prev => {
@@ -45,9 +66,21 @@ export default function WorkflowDetails() {
             eventSource.close();
         }
       } catch (err) {
-        console.error("Failed to parse SSE event", err);
+        console.error("Failed to parse SSE progress event", err);
       }
-    };
+    });
+
+    eventSource.addEventListener("log", (event) => {
+        try {
+            const data = JSON.parse(event.data);
+            setLogs(prev => {
+                if (prev.find(l => l.id === data.id)) return prev; // Prevent duplicate logs
+                return [...prev, data];
+            });
+        } catch(err) {
+            console.error("Failed to parse SSE log event", err);
+        }
+    });
     
     eventSource.onerror = (err) => {
         console.error("EventSource failed:", err);
@@ -93,7 +126,7 @@ export default function WorkflowDetails() {
         
         // Re-open SSE stream to catch the publishing updates
         const eventSource = new EventSource(`${API_BASE_URL}/workflows/${workflowId}/stream`);
-        eventSource.onmessage = (event) => {
+        eventSource.addEventListener("message", (event) => {
             const data = JSON.parse(event.data);
             setWorkflow(prev => prev ? {...prev, progress: data.progress, status: data.status, current_step: data.current_step} : prev);
             if (data.status === "FAILED" || (data.status === "PUBLISHED" && data.progress === 100)) {
@@ -103,7 +136,17 @@ export default function WorkflowDetails() {
                     api.getWorkflowState(Number(workflowId)).then(setWorkflowState);
                 }
             }
-        };
+        });
+        
+        eventSource.addEventListener("log", (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                setLogs(prev => {
+                    if (prev.find(l => l.id === data.id)) return prev;
+                    return [...prev, data];
+                });
+            } catch(err) {}
+        });
     } catch (err) {
         console.error(err);
         alert("Failed to approve workflow.");
@@ -148,6 +191,52 @@ export default function WorkflowDetails() {
                 >
                   <div className="absolute inset-0 bg-white/20 w-full h-full animate-[shimmer_2s_infinite]"></div>
                 </div>
+            </div>
+        </div>
+
+        {/* Terminal Log Viewer */}
+        <div className="mt-8 bg-gray-100 dark:bg-[#0a0a0b] border border-gray-300 dark:border-white/10 rounded-2xl overflow-hidden shadow-inner flex flex-col h-72">
+            <div className="bg-gray-200 dark:bg-white/10 px-4 py-2 border-b border-gray-300 dark:border-white/10 flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-widest text-gray-600 dark:text-gray-400">Live Agent Execution Logs</span>
+                <div className="flex gap-3 items-center">
+                    <button 
+                        onClick={handleCopyLogs} 
+                        className="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white transition-colors"
+                        title="Copy Logs"
+                    >
+                        {copiedLogs ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                    </button>
+                    <div className="flex gap-1.5 ml-2">
+                        <div className="w-2.5 h-2.5 rounded-full bg-red-400/80"></div>
+                        <div className="w-2.5 h-2.5 rounded-full bg-amber-400/80"></div>
+                        <div className="w-2.5 h-2.5 rounded-full bg-green-400/80"></div>
+                    </div>
+                </div>
+            </div>
+            <div className="p-4 overflow-y-auto flex-1 font-mono text-sm leading-relaxed space-y-2">
+                {logs.length === 0 ? (
+                    <div className="text-gray-400 dark:text-gray-600 italic text-center mt-20">Waiting for agents to begin...</div>
+                ) : (
+                    logs.map(log => (
+                        <div key={log.id} className="flex gap-4">
+                            <span className="text-gray-400 dark:text-gray-500 shrink-0 select-none">
+                                {new Date(log.timestamp).toLocaleTimeString([], { hour12: false })}
+                            </span>
+                            <span className={`font-semibold shrink-0 select-none ${
+                                log.agent === 'System' ? 'text-gray-500 dark:text-gray-400' :
+                                log.agent === 'Research Agent' ? 'text-blue-600 dark:text-blue-400' :
+                                log.agent === 'Content Agent' ? 'text-amber-600 dark:text-amber-400' :
+                                log.agent === 'SEO Agent' ? 'text-green-600 dark:text-green-400' :
+                                log.agent === 'Media Agent' ? 'text-purple-600 dark:text-purple-400' :
+                                'text-cyan-600 dark:text-cyan-400'
+                            }`}>
+                                [{log.agent}]
+                            </span>
+                            <span className="text-gray-800 dark:text-gray-300 break-words">{log.action}</span>
+                        </div>
+                    ))
+                )}
+                <div ref={logsEndRef} />
             </div>
         </div>
 

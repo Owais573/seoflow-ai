@@ -178,6 +178,7 @@ npm run dev
 ---
 
 ## 6. Recent Enhancements (Changelog)
+- **Live Agent Terminal & Token Observability**: Added a sleek, theme-adaptive, real-time terminal UI below the progress bar that streams execution logs via SSE. All LangGraph agents have been instrumented to push granular logs (including exact LLM token usage for inputs and outputs) directly to a PostgreSQL `WorkflowLog` table for permanent historical tracing. Includes a 1-click "Copy Logs" clipboard integration.
 - **Premium B2B SaaS UI/UX Overhaul**: Completely redesigned the frontend to feature a sleek, modern monochrome aesthetic (inspired by Vercel/Linear). Stripped out generic neon gradients and replaced them with high-contrast slate components, frosted glassmorphism (backdrop-blur), and elegant neutral focus rings. Added a seamless Light/Dark mode toggle (powered by `next-themes`) embedded in a persistent sticky navigation bar.
 - **Advanced Publishing (Markdown to HTML & Categories)**: Integrated the `markdown` library to automatically render the AI's drafts into pristine HTML before sending to WordPress. Posts are automatically tagged under an "AI Articles" category, and redundant H1 titles are stripped from the markdown to ensure clean WordPress previews.
 - **Featured Image Uploads**: Built a new `/api/workflows/{id}/upload-image` endpoint. Users can now easily upload a DALL-E/Midjourney generated image via a modern drag-and-drop file upload zone. It features instant visual image previews and automatically attaches the image as the `featured_media` to the WordPress post.

@@ -23,3 +23,15 @@ from contextlib import asynccontextmanager
 async def get_db_context():
     async with async_session_maker() as session:
         yield session
+
+async def log_workflow_event(workflow_id: int, agent: str, action: str, details: dict = None):
+    from database.models import WorkflowLog
+    async with get_db_context() as db:
+        log = WorkflowLog(
+            workflow_id=workflow_id,
+            agent=agent,
+            action=action,
+            details=details
+        )
+        db.add(log)
+        await db.commit()

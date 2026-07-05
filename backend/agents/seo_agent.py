@@ -2,6 +2,7 @@ import os
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from workflows.state import WorkflowState
+from database.session import log_workflow_event
 
 llm = ChatOpenAI(model=os.getenv("OPENAI_MODEL", "gpt-4.1-mini"), api_key=os.getenv("OPENAI_API_KEY"))
 
@@ -22,9 +23,15 @@ async def seo_node(state: WorkflowState) -> dict:
             "meta_description": {"type": "string"}
         },
         "required": ["seo_title", "meta_description"]
-    })
+    }, include_raw=True)
     
-    result = await chain.ainvoke({})
+    await log_workflow_event(state["workflow_id"], "SEO Agent", "Analyzing draft content to extract optimized Title and Meta Description...")
+    result_raw = await chain.ainvoke({})
+    result = result_raw["parsed"]
+    usage = result_raw["raw"].usage_metadata or {}
+    prompt_tokens = usage.get("input_tokens", 0)
+    completion_tokens = usage.get("output_tokens", 0)
+    await log_workflow_event(state["workflow_id"], "SEO Agent", f"Extracted SEO Title: '{result['seo_title']}' [Tokens: ↑{prompt_tokens} | ↓{completion_tokens}]")
     
     return {
         "seo_metadata": {

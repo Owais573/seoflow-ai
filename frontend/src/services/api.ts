@@ -19,6 +19,13 @@ export interface Workflow {
     completed_at: string | null;
 }
 
+export interface WorkflowLog {
+    id: number;
+    agent: string;
+    action: string;
+    timestamp: string;
+}
+
 export const api = {
     async createWorkflow(data: ContentBriefCreate): Promise<Workflow> {
         const response = await fetch(`${API_BASE_URL}/workflows/`, {
@@ -39,6 +46,12 @@ export const api = {
     async getWorkflow(id: number): Promise<Workflow> {
         const response = await fetch(`${API_BASE_URL}/workflows/${id}`);
         if (!response.ok) throw new Error("Failed to fetch workflow");
+        return response.json();
+    },
+
+    async getWorkflowLogs(id: number): Promise<WorkflowLog[]> {
+        const response = await fetch(`${API_BASE_URL}/workflows/${id}/logs`);
+        if (!response.ok) throw new Error("Failed to fetch workflow logs");
         return response.json();
     },
 

@@ -56,13 +56,23 @@ async def get_workflow_state(workflow_id: int):
     config = {"configurable": {"thread_id": str(workflow_id)}}
     state = await graph.aget_state(config)
     if not state or not state.values:
-        # Return a graceful fallback instead of 404 because MemorySaver wipes on server reload
         return {
             "draft_content": "Memory state was lost (likely due to server reload). Please create a new workflow.",
             "seo_metadata": {"title": "State Lost", "description": "State Lost"},
             "media_prompt": "State Lost"
         }
     return state.values
+
+@router.get("/{workflow_id}/logs")
+async def get_workflow_logs(workflow_id: int, db: AsyncSession = Depends(get_db)):
+    from database.models import WorkflowLog
+    result = await db.execute(
+        select(WorkflowLog)
+        .where(WorkflowLog.workflow_id == workflow_id)
+        .order_by(WorkflowLog.id.asc())
+    )
+    logs = result.scalars().all()
+    return [{"id": l.id, "agent": l.agent, "action": l.action, "timestamp": l.timestamp.isoformat()} for l in logs]
 
 @router.post("/{workflow_id}/upload-image")
 async def upload_image(workflow_id: int, file: UploadFile = File(...)):
@@ -163,10 +173,10 @@ async def start_workflow(workflow_id: int, background_tasks: BackgroundTasks, db
 @router.get("/{workflow_id}/stream")
 async def stream_workflow_progress(workflow_id: int, db: AsyncSession = Depends(get_db)):
     async def event_generator():
-        # This is a placeholder SSE generator.
-        # In a real app, this would listen to Redis/Postgres PUB/SUB or check database state periodically
-        # or LangGraph's astream_events.
+        from database.models import WorkflowLog
+        import json
         previous_progress = -1
+        last_log_id = 0
         while True:
             # Re-fetch the workflow in a fresh session to avoid stale SQLAlchemy caching
             async with get_db_context() as local_db:
@@ -176,6 +186,26 @@ async def stream_workflow_progress(workflow_id: int, db: AsyncSession = Depends(
                     yield {"event": "error", "data": "Workflow not found"}
                     break
                     
+                # Fetch new logs
+                logs_query = await local_db.execute(
+                    select(WorkflowLog)
+                    .where(WorkflowLog.workflow_id == workflow_id, WorkflowLog.id > last_log_id)
+                    .order_by(WorkflowLog.id.asc())
+                )
+                new_logs = logs_query.scalars().all()
+                for log in new_logs:
+                    log_data = {
+                        "id": log.id,
+                        "agent": log.agent,
+                        "action": log.action,
+                        "timestamp": log.timestamp.isoformat()
+                    }
+                    yield {
+                        "event": "log",
+                        "data": json.dumps(log_data)
+                    }
+                    last_log_id = log.id
+
                 if workflow.progress != previous_progress:
                     yield {
                         "event": "message",

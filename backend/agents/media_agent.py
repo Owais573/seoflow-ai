@@ -1,8 +1,7 @@
 import os
 from langchain_openai import ChatOpenAI
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import StrOutputParser
 from workflows.state import WorkflowState
+from database.session import log_workflow_event
 import httpx
 
 llm = ChatOpenAI(model=os.getenv("OPENAI_MODEL", "gpt-4.1-mini"), api_key=os.getenv("OPENAI_API_KEY"))
@@ -30,12 +29,19 @@ async def media_node(state: WorkflowState) -> dict:
         ("user", f"Topic: {topic}\nArticle Snippet: {draft_content}\n\nPlease generate ONLY the image prompt string.")
     ])
     
-    chain = prompt | llm | StrOutputParser()
+    chain = prompt | llm
     
-    result = await chain.ainvoke({})
+    await log_workflow_event(state["workflow_id"], "Media Agent", "Formulating precise generative AI prompt for featured image creation...")
+    result_raw = await chain.ainvoke({})
+    result = result_raw.content
+    usage = result_raw.usage_metadata or {}
+    prompt_tokens = usage.get("input_tokens", 0)
+    completion_tokens = usage.get("output_tokens", 0)
+    await log_workflow_event(state["workflow_id"], "Media Agent", f"Image prompt generated. Prompt length: {len(result)} characters. [Tokens: ↑{prompt_tokens} | ↓{completion_tokens}]")
     
     # Trigger webhook to notify human that workflow is waiting for review
     await trigger_n8n_webhook(state.get("workflow_id"), topic)
+    await log_workflow_event(state["workflow_id"], "System", "Workflow paused. Triggering webhook alert for human review.")
     
     return {
         "media_prompt": result,

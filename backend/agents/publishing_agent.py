@@ -1,6 +1,7 @@
 import os
 import httpx
 from workflows.state import WorkflowState
+from database.session import log_workflow_event
 import base64
 import markdown
 
@@ -17,6 +18,7 @@ async def publishing_node(state: WorkflowState) -> dict:
         lines = draft_content_clean.split('\n')
         draft_content_clean = '\n'.join(lines[1:]).strip()
     
+    await log_workflow_event(state["workflow_id"], "Publishing Agent", "Converting Markdown draft to semantic HTML...")
     # Convert Markdown to HTML
     html_content = markdown.markdown(draft_content_clean)
     
@@ -42,6 +44,8 @@ async def publishing_node(state: WorkflowState) -> dict:
     
     # WordPress REST API endpoint for posts
     endpoint = f"{wp_url.rstrip('/')}/wp-json/wp/v2/posts"
+    
+    await log_workflow_event(state["workflow_id"], "Publishing Agent", "Authenticating with WordPress REST API and formatting payload...")
     
     try:
         async with httpx.AsyncClient() as client:
@@ -71,6 +75,7 @@ async def publishing_node(state: WorkflowState) -> dict:
             response = await client.post(endpoint, json=data, headers=headers)
             if response.status_code in [200, 201]:
                 post_data = response.json()
+                await log_workflow_event(state["workflow_id"], "Publishing Agent", f"Successfully published article to WordPress. Post ID: {post_data.get('id')}")
                 return {
                     "current_step": f"Published to WP (ID: {post_data.get('id')})",
                     "progress": 100,
