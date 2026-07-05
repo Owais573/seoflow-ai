@@ -149,6 +149,14 @@ npm run dev
 ```
 *The UI will be available at `http://localhost:3000`.*
 
+### Step 6: n8n Webhook & Slack Notifications (Optional)
+To receive real-time alerts when workflows require human review or are published:
+1. Open n8n at `http://localhost:5678`.
+2. Click **Add Workflow** -> **Import from File** and select `n8n/workflows/human_review_alert.json`.
+3. Configure the Slack credential by creating a new Slack App (via `api.slack.com`) with `chat:write` scopes and providing your Bot OAuth Token.
+4. Set your exact Slack channel name (e.g., `#seoflow-alerts`) inside the Slack nodes.
+5. Activate the workflow! The FastAPI backend (`core/notifications.py`) will automatically trigger the webhook when workflows reach the `PENDING_REVIEW` or `PUBLISHED` states.
+
 ---
 
 ## 4. How to Use (User Guide)
@@ -179,6 +187,7 @@ npm run dev
 ---
 
 ## 6. Recent Enhancements (Changelog)
+- **n8n Webhook Integration for Slack Alerts**: Configured the FastAPI backend to asynchronously dispatch HTTP webhooks to the local n8n instance without blocking the event loop. Built a ready-to-deploy n8n workflow blueprint (`human_review_alert.json`) that processes these webhooks and formats actionable Slack alerts featuring dynamic workflow data and direct dashboard links.
 - **Global System Observability Dashboard**: Deployed a comprehensive `/monitoring` route providing real-time telemetry across the entire platform. Features dynamic KPI cards (Active Streams, Token Burn Rate, System Latency), a detailed agent efficiency tracking table to identify execution spikes, and a unified Global Log Stream terminal tracking all active concurrent workflows via SSE. The AI agents were restructured to pipe explicit LLM token consumption metrics directly into the native PostgreSQL JSON columns for hyper-accurate tracking.
 - **System Stability & Integrity Fixes**: Resolved a critical PostgreSQL `ForeignKeyViolationError` by implementing robust cascading deletion logic when removing workflows from the dashboard. Also patched a runtime exception in the LangGraph orchestration layer caused by missing prompt template definitions during the token tracking rollout.
 - **Live Agent Terminal & Token Observability**: Added a sleek, theme-adaptive, real-time terminal UI below the progress bar that streams execution logs via SSE. All LangGraph agents have been instrumented to push granular logs (including exact LLM token usage for inputs and outputs) directly to a PostgreSQL `WorkflowLog` table for permanent historical tracing. Includes a 1-click "Copy Logs" clipboard integration.
