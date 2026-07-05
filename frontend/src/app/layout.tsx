@@ -48,7 +48,7 @@ export default function RootLayout({
                 </span>
               </Link>
               <div className="flex items-center gap-6">
-                <Link href="/monitoring" className="text-sm font-medium text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
+                <Link href="/monitoring" className="text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors border border-gray-300 dark:border-white/20 rounded-full px-5 py-2 hover:bg-gray-50 dark:hover:bg-white/5 shadow-sm">
                   Monitoring
                 </Link>
                 <div className="flex items-center gap-4">

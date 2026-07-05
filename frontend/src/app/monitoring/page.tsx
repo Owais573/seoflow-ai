@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import Link from "next/link";
 import { api, MonitoringStats, WorkflowLog, API_BASE_URL } from "@/services/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Activity, Cpu, Clock, Users, Terminal, AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Activity, Cpu, Clock, Users, Terminal, AlertCircle, ArrowLeft } from "lucide-react";
 
 export default function MonitoringDashboard() {
     const [stats, setStats] = useState<MonitoringStats | null>(null);
@@ -54,7 +56,15 @@ export default function MonitoringDashboard() {
     }
 
     return (
-        <div className="container mx-auto max-w-6xl py-12 px-6">
+        <div className="container mx-auto max-w-6xl py-8 px-6">
+            <div className="mb-6">
+                <Link href="/">
+                    <Button variant="ghost" className="text-muted-foreground hover:text-foreground -ml-4 flex items-center gap-2 transition-colors">
+                        <ArrowLeft className="w-4 h-4" /> Back to Dashboard
+                    </Button>
+                </Link>
+            </div>
+            
             <div className="mb-8 flex items-center justify-between">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">System Observability</h1>
