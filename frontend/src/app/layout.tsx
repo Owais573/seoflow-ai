@@ -40,17 +40,17 @@ export default function RootLayout({
             disableTransitionOnChange
         >
           {/* Glassmorphism Sticky Nav */}
-          <header className="sticky top-0 z-50 w-full border-b border-gray-200 dark:border-white/10 bg-white/70 dark:bg-black/40 backdrop-blur-md">
+          <header className="sticky top-0 z-50 w-full border-b border-gray-200 dark:border-white/10 bg-white/70 dark:bg-[#0a0a0b]/80 backdrop-blur-md">
             <div className="container mx-auto px-6 h-16 flex items-center justify-between">
               <Link href="/" className="flex items-center gap-2">
-                <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-cyan-500 tracking-tight">
+                <span className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
                   SEOFlow AI
                 </span>
               </Link>
               <div className="flex items-center gap-4">
                 <ThemeToggle />
                 <Link href="/brief/new">
-                  <Button className="bg-gradient-to-r from-purple-600 to-cyan-500 hover:opacity-90 text-white font-medium rounded-full px-6 transition-all hover:scale-105 shadow-md shadow-purple-500/20">
+                  <Button className="bg-gray-900 hover:bg-gray-800 dark:bg-white dark:hover:bg-gray-200 dark:text-gray-900 text-white font-medium rounded-full px-6 transition-all shadow-sm">
                     + New Brief
                   </Button>
                 </Link>

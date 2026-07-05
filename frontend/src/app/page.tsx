@@ -52,7 +52,7 @@ export default function Dashboard() {
           <p className="text-muted-foreground mt-2 text-lg">Manage your AI-powered SEO content workflows.</p>
         </div>
         <Link href="/brief/new">
-          <Button className="bg-gradient-to-r from-purple-600 to-cyan-500 hover:opacity-90 text-white font-medium rounded-full px-6 transition-all hover:scale-105 shadow-md shadow-purple-500/20">
+          <Button className="bg-gray-900 hover:bg-gray-800 dark:bg-white dark:hover:bg-gray-200 dark:text-gray-900 text-white font-medium rounded-full px-6 transition-all shadow-sm">
             + New Brief
           </Button>
         </Link>
@@ -69,10 +69,10 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {workflows.map((wf) => (
             <Link key={wf.id} href={`/workflows/${wf.id}`}>
-              <div className="p-6 border border-gray-200 dark:border-white/10 rounded-2xl hover:-translate-y-1 hover:shadow-xl hover:shadow-purple-500/10 dark:hover:shadow-purple-500/5 transition-all duration-300 bg-white/70 dark:bg-white/5 backdrop-blur-md flex flex-col justify-between h-full group">
+              <div className="p-6 border border-gray-200 dark:border-white/10 rounded-2xl hover:shadow-lg dark:hover:bg-white/10 transition-all duration-300 bg-white/70 dark:bg-white/5 backdrop-blur-md flex flex-col justify-between h-full group">
                 <div className="flex justify-between items-start mb-6">
                   <div>
-                    <h3 className="font-bold text-xl mb-1 group-hover:bg-clip-text group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-purple-600 group-hover:to-cyan-500 transition-all duration-300">
+                    <h3 className="font-bold text-xl mb-1 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors duration-300">
                       Workflow #{wf.id}
                     </h3>
                     <p className="text-xs text-muted-foreground">{new Date(wf.created_at).toLocaleDateString()}</p>
@@ -95,7 +95,7 @@ export default function Dashboard() {
                     </div>
                     <div className="h-1.5 w-full bg-gray-200 dark:bg-white/10 rounded-full overflow-hidden">
                       <div 
-                        className="h-full bg-gradient-to-r from-purple-500 to-cyan-500 transition-all duration-500"
+                        className="h-full bg-gray-900 dark:bg-white transition-all duration-500"
                         style={{ width: `${wf.progress}%` }}
                       />
                     </div>
@@ -107,7 +107,7 @@ export default function Dashboard() {
                       <Button variant="outline" size="sm" onClick={cancelDelete} className="h-7 text-xs rounded-lg bg-transparent border-red-500/30 hover:bg-red-500/20 text-red-600 dark:text-red-400">No</Button>
                     </div>
                   ) : deletingId === wf.id ? (
-                    <div className="flex items-center justify-center w-9 h-9 shrink-0 text-purple-500">
+                    <div className="flex items-center justify-center w-9 h-9 shrink-0 text-gray-500 dark:text-gray-400">
                       <Loader2 className="w-5 h-5 animate-spin" />
                     </div>
                   ) : (

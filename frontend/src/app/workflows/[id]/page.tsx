@@ -124,7 +124,7 @@ export default function WorkflowDetails() {
       </div>
       
       <div className="flex justify-between items-center mb-10">
-        <h1 className="text-4xl font-extrabold tracking-tight">Workflow #{workflow.id}</h1>
+        <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white">Workflow #{workflow.id}</h1>
         <span className={`px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest shadow-sm ${
             workflow.status === 'PENDING_REVIEW' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20' :
             workflow.status === 'PUBLISHED' ? 'bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20' :
@@ -135,7 +135,7 @@ export default function WorkflowDetails() {
         </span>
       </div>
 
-      <div className="bg-white/70 dark:bg-white/5 backdrop-blur-xl p-8 rounded-3xl border border-gray-200 dark:border-white/10 shadow-xl shadow-purple-500/5 space-y-8">
+      <div className="bg-white/70 dark:bg-white/5 backdrop-blur-xl p-8 rounded-3xl border border-gray-200 dark:border-white/10 shadow-xl shadow-gray-200/50 dark:shadow-none space-y-8">
         <div>
             <div className="flex justify-between text-sm mb-3 font-semibold text-muted-foreground">
                 <span className="animate-pulse">{workflow.current_step}</span>
@@ -143,7 +143,7 @@ export default function WorkflowDetails() {
             </div>
             <div className="w-full bg-gray-200 dark:bg-black/50 rounded-full h-4 overflow-hidden border border-gray-300/50 dark:border-white/5">
                 <div 
-                  className="bg-gradient-to-r from-purple-500 to-cyan-500 h-full rounded-full transition-all duration-700 ease-out relative" 
+                  className="bg-gray-900 dark:bg-white h-full rounded-full transition-all duration-700 ease-out relative" 
                   style={{ width: `${workflow.progress}%` }}
                 >
                   <div className="absolute inset-0 bg-white/20 w-full h-full animate-[shimmer_2s_infinite]"></div>
@@ -166,30 +166,30 @@ export default function WorkflowDetails() {
         )}
 
         {workflow.status === "PENDING_REVIEW" && (
-            <div className="mt-10 p-8 bg-gray-50/50 dark:bg-[#0f0f11] border border-purple-500/20 rounded-2xl shadow-inner relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 to-cyan-500"></div>
-                <h3 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-500 to-cyan-400 mb-2">Human Review Required</h3>
+            <div className="mt-10 p-8 bg-gray-50/50 dark:bg-[#0f0f11] border border-gray-200 dark:border-white/10 rounded-2xl shadow-inner relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gray-300 dark:bg-white/20"></div>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Human Review Required</h3>
                 <p className="mb-8 text-muted-foreground text-lg">The AI agents have drafted the content. Please review and finalize the document below.</p>
                 
                 {workflowState ? (
                     <div className="space-y-6 mb-8">
                         <div>
                             <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">SEO Title</label>
-                            <input className="w-full p-4 bg-white dark:bg-black/50 border border-gray-200 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 outline-none transition-all text-lg font-medium" value={editTitle} onChange={e => setEditTitle(e.target.value)} />
+                            <input className="w-full p-4 bg-white dark:bg-black/50 border border-gray-200 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-gray-500/30 focus:border-gray-400 dark:focus:ring-white/20 dark:focus:border-gray-500 outline-none transition-all text-lg font-medium" value={editTitle} onChange={e => setEditTitle(e.target.value)} />
                         </div>
                         <div>
                             <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Meta Description</label>
-                            <textarea className="w-full p-4 bg-white dark:bg-black/50 border border-gray-200 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 outline-none transition-all" rows={2} value={editDesc} onChange={e => setEditDesc(e.target.value)} />
+                            <textarea className="w-full p-4 bg-white dark:bg-black/50 border border-gray-200 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-gray-500/30 focus:border-gray-400 dark:focus:ring-white/20 dark:focus:border-gray-500 outline-none transition-all" rows={2} value={editDesc} onChange={e => setEditDesc(e.target.value)} />
                         </div>
                         <div>
                             <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Draft Content (Markdown)</label>
-                            <textarea className="w-full p-6 bg-white dark:bg-[#0a0a0b] border border-gray-200 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 outline-none transition-all font-mono text-sm leading-relaxed shadow-inner" rows={14} value={editContent} onChange={e => setEditContent(e.target.value)} />
+                            <textarea className="w-full p-6 bg-white dark:bg-[#0a0a0b] border border-gray-200 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-gray-500/30 focus:border-gray-400 dark:focus:ring-white/20 dark:focus:border-gray-500 outline-none transition-all font-mono text-sm leading-relaxed shadow-inner" rows={14} value={editContent} onChange={e => setEditContent(e.target.value)} />
                         </div>
                         <div>
                             <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Generated Media Prompt</label>
-                            <textarea className="w-full p-4 bg-white dark:bg-black/50 border border-gray-200 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 outline-none transition-all italic text-sm" rows={2} value={editPrompt} onChange={e => setEditPrompt(e.target.value)} />
+                            <textarea className="w-full p-4 bg-white dark:bg-black/50 border border-gray-200 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-gray-500/30 focus:border-gray-400 dark:focus:ring-white/20 dark:focus:border-gray-500 outline-none transition-all italic text-sm" rows={2} value={editPrompt} onChange={e => setEditPrompt(e.target.value)} />
                         </div>
-                        <div className="bg-white/50 dark:bg-black/20 rounded-2xl border-2 border-dashed border-gray-300 dark:border-white/20 relative hover:bg-gray-50 dark:hover:bg-purple-900/10 hover:border-purple-500/50 transition-all overflow-hidden group">
+                        <div className="bg-white/50 dark:bg-black/20 rounded-2xl border-2 border-dashed border-gray-300 dark:border-white/20 relative hover:bg-gray-50 dark:hover:bg-white/5 hover:border-gray-400 dark:hover:border-white/30 transition-all overflow-hidden group">
                             <input 
                                 type="file" 
                                 accept="image/*" 
@@ -213,7 +213,7 @@ export default function WorkflowDetails() {
                                     </div>
                                 ) : (
                                     <div className="relative z-0 group-hover:scale-105 transition-transform duration-300">
-                                        <div className="mx-auto w-16 h-16 mb-6 text-purple-500/50 bg-purple-500/10 rounded-full flex items-center justify-center group-hover:bg-purple-500/20 group-hover:text-purple-400 transition-colors">
+                                        <div className="mx-auto w-16 h-16 mb-6 text-gray-400 bg-gray-100 dark:bg-white/5 dark:text-gray-500 rounded-full flex items-center justify-center group-hover:bg-gray-200 dark:group-hover:bg-white/10 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">
                                             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-8 h-8">
                                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                                             </svg>
@@ -231,7 +231,7 @@ export default function WorkflowDetails() {
                 )}
 
                 <div className="flex space-x-4 pt-4 border-t border-gray-200 dark:border-white/10 mt-6">
-                    <Button onClick={handleApprove} disabled={approving} className="h-14 px-8 text-lg font-bold bg-gradient-to-r from-purple-600 to-cyan-500 hover:opacity-90 text-white rounded-xl transition-all hover:scale-105 shadow-lg shadow-purple-500/25">
+                    <Button onClick={handleApprove} disabled={approving} className="h-14 px-8 text-lg font-bold bg-gray-900 hover:bg-gray-800 dark:bg-white dark:hover:bg-gray-200 text-white dark:text-gray-900 rounded-xl transition-all hover:scale-105 shadow-lg shadow-gray-200/50 dark:shadow-none">
                         {approving ? (
                             <div className="flex items-center gap-3">
                                 <Loader2 className="w-5 h-5 animate-spin" />
