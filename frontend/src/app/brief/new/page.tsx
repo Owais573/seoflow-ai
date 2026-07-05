@@ -31,16 +31,19 @@ export default function NewBrief() {
   };
 
   return (
-    <div className="container mx-auto p-8 max-w-2xl">
-      <h1 className="text-3xl font-bold mb-8">Create Content Brief</h1>
-      <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-lg border shadow-sm">
+    <div className="container mx-auto p-8 max-w-2xl mt-8">
+      <div className="mb-10 text-center">
+        <h1 className="text-4xl font-extrabold tracking-tight mb-2">Create Content Brief</h1>
+        <p className="text-muted-foreground text-lg">Define the topic and let the AI agents do the heavy lifting.</p>
+      </div>
+      <form onSubmit={handleSubmit} className="space-y-6 bg-white/70 dark:bg-white/5 backdrop-blur-xl p-8 rounded-3xl border border-gray-200 dark:border-white/10 shadow-xl shadow-purple-500/5">
         
         <div className="space-y-2">
-          <label className="text-sm font-medium">Topic</label>
+          <label className="text-sm font-semibold tracking-wide text-gray-700 dark:text-gray-300 uppercase">Topic</label>
           <input 
             type="text" 
             required 
-            className="w-full p-2 border rounded-md"
+            className="w-full p-4 bg-gray-50 dark:bg-black/40 border border-gray-200 dark:border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all"
             value={formData.topic}
             onChange={e => setFormData({...formData, topic: e.target.value})}
             placeholder="e.g. Best SEO Practices in 2024"
@@ -48,40 +51,40 @@ export default function NewBrief() {
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium">Primary Keyword</label>
+          <label className="text-sm font-semibold tracking-wide text-gray-700 dark:text-gray-300 uppercase">Primary Keyword</label>
           <input 
             type="text" 
             required 
-            className="w-full p-2 border rounded-md"
+            className="w-full p-4 bg-gray-50 dark:bg-black/40 border border-gray-200 dark:border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 transition-all"
             value={formData.primary_keyword}
             onChange={e => setFormData({...formData, primary_keyword: e.target.value})}
             placeholder="e.g. SEO tips 2024"
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-6">
           <div className="space-y-2">
-            <label className="text-sm font-medium">Tone</label>
+            <label className="text-sm font-semibold tracking-wide text-gray-700 dark:text-gray-300 uppercase">Tone</label>
             <input 
               type="text" 
-              className="w-full p-2 border rounded-md"
+              className="w-full p-4 bg-gray-50 dark:bg-black/40 border border-gray-200 dark:border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all"
               value={formData.tone}
               onChange={e => setFormData({...formData, tone: e.target.value})}
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium">Audience</label>
+            <label className="text-sm font-semibold tracking-wide text-gray-700 dark:text-gray-300 uppercase">Audience</label>
             <input 
               type="text" 
-              className="w-full p-2 border rounded-md"
+              className="w-full p-4 bg-gray-50 dark:bg-black/40 border border-gray-200 dark:border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 transition-all"
               value={formData.audience}
               onChange={e => setFormData({...formData, audience: e.target.value})}
             />
           </div>
         </div>
 
-        <Button type="submit" disabled={loading} className="w-full">
-          {loading ? "Generating Workflow..." : "Create Brief & Start AI Workflow"}
+        <Button type="submit" disabled={loading} className="w-full h-14 text-lg font-bold bg-gradient-to-r from-purple-600 to-cyan-500 hover:opacity-90 text-white rounded-xl transition-all hover:scale-[1.02] shadow-lg shadow-purple-500/25 mt-4">
+          {loading ? "Initializing Agents..." : "Create Brief & Start AI Workflow"}
         </Button>
       </form>
     </div>
