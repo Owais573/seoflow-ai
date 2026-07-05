@@ -273,14 +273,17 @@ async def approve_workflow(workflow_id: int, approval: ApprovalRequest, backgrou
             wf = wf_res.scalar_one_or_none()
             if final_state.get("status") == "PUBLISHED":
                 wf.status = WorkflowStatus.PUBLISHED
+                
+                post_url = final_state.get("published_url")
+                if post_url:
+                    from database.models import PublishedArticle
+                    new_article = PublishedArticle(workflow_id=workflow_id, url=post_url)
+                    local_db.add(new_article)
+
                 # Fetch brief for webhook
                 b_res = await local_db.execute(select(ContentBrief).where(ContentBrief.id == wf.brief_id))
                 b_row = b_res.scalar_one_or_none()
                 if b_row:
-                    from database.models import PublishedArticle
-                    p_res = await local_db.execute(select(PublishedArticle).where(PublishedArticle.workflow_id == workflow_id))
-                    p_row = p_res.scalar_one_or_none()
-                    post_url = p_row.url if p_row else None
                     asyncio.create_task(send_n8n_webhook("published", workflow_id, b_row.topic, post_url=post_url))
             else:
                 wf.status = WorkflowStatus.FAILED
