@@ -179,7 +179,7 @@ npm run dev
 
 ## 6. Recent Enhancements (Changelog)
 - **Advanced Publishing (Markdown to HTML & Categories)**: Integrated the `markdown` library to automatically render the AI's drafts into pristine HTML before sending to WordPress. Posts are also automatically tagged under an "AI Articles" category instead of "Uncategorized".
-- **Featured Image Uploads**: Built a new `/api/workflows/{id}/upload-image` endpoint. Users can now easily upload a DALL-E/Midjourney generated image via a simple file upload UI, which automatically attaches as the `featured_media` to the WordPress post.
+- **Featured Image Uploads**: Built a new `/api/workflows/{id}/upload-image` endpoint. Users can now easily upload a DALL-E/Midjourney generated image via a modern drag-and-drop file upload zone. It features instant visual image previews and automatically attaches the image as the `featured_media` to the WordPress post.
 - **Enhanced Review & Publishing UX**: The native browser `alert()` popups were replaced with dynamic, inline loading states (e.g., "Uploading Image...", "Publishing to WordPress..."). Added a seamless "← Back to Dashboard" button and a post-publish success banner providing a direct "View Post" link to the live article on WordPress.
 - **Real-Time UI & Logging**: Fixed SSE SQLAlchemy caching to enable seamless 10% -> 90% UI progress tracking without refreshing. Added real-time terminal `print()` logs to track LangGraph agent progression.
 - **Editable Human Review UI**: Upgraded the frontend to fetch the AI's internal memory state and display it in an interactive form, allowing human editors to manually tweak the content before publishing.
