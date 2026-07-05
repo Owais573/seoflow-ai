@@ -12,8 +12,7 @@ from database.session import get_db, get_db_context
 from database.models import ContentBrief, Workflow, WorkflowStatus
 from schemas.briefs import ContentBriefCreate, ContentBriefResponse
 from schemas.workflows import WorkflowResponse, WorkflowDetailResponse, ApprovalRequest
-
-# ... (down below)
+from core.notifications import send_n8n_webhook
 
 
 from sse_starlette.sse import EventSourceResponse
@@ -170,6 +169,8 @@ async def start_workflow(workflow_id: int, background_tasks: BackgroundTasks, db
                 if wf:
                     if "status" in event and event["status"] in [s.value for s in WorkflowStatus]:
                         wf.status = WorkflowStatus(event["status"])
+                        if wf.status == WorkflowStatus.PENDING_REVIEW:
+                            asyncio.create_task(send_n8n_webhook("human_review_required", workflow_id, brief.topic))
                     if "current_step" in event:
                         wf.current_step = event["current_step"]
                     if "progress" in event:
@@ -272,6 +273,11 @@ async def approve_workflow(workflow_id: int, approval: ApprovalRequest, backgrou
             wf = wf_res.scalar_one_or_none()
             if final_state.get("status") == "PUBLISHED":
                 wf.status = WorkflowStatus.PUBLISHED
+                # Fetch brief for webhook
+                b_res = await local_db.execute(select(ContentBrief).where(ContentBrief.id == wf.brief_id))
+                b_row = b_res.scalar_one_or_none()
+                if b_row:
+                    asyncio.create_task(send_n8n_webhook("published", workflow_id, b_row.topic))
             else:
                 wf.status = WorkflowStatus.FAILED
             wf.current_step = final_state.get("current_step", "Finished")

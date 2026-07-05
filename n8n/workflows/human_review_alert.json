@@ -1,0 +1,141 @@
+{
+  "name": "SEOFlow Slack Alerts",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "review-pending",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        100,
+        300
+      ],
+      "webhookId": "review-pending-webhook-id"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json[\"body\"][\"event\"]}}",
+              "value2": "human_review_required"
+            }
+          ]
+        }
+      },
+      "name": "If Review Required",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        300,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "channel": "ENTER_YOUR_SLACK_CHANNEL_HERE",
+        "text": "=🚨 *Action Required for SEOFlow AI*\n\nWorkflow #{{$json[\"body\"][\"workflow_id\"]}} ('{{$json[\"body\"][\"topic\"]}}') has been drafted by the AI agents and is awaiting your review.\n\nClick here to review and publish: {{$json[\"body\"][\"dashboard_url\"]}}",
+        "otherOptions": {}
+      },
+      "name": "Send Slack Message",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 1,
+      "position": [
+        550,
+        200
+      ],
+      "credentials": {
+        "slackApi": {
+          "id": "slackApi",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$node[\"Webhook\"].json[\"body\"][\"event\"]}}",
+              "value2": "published"
+            }
+          ]
+        }
+      },
+      "name": "If Published",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        300,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "channel": "ENTER_YOUR_SLACK_CHANNEL_HERE",
+        "text": "=✅ *Successfully Published*\n\nWorkflow #{{$node[\"Webhook\"].json[\"body\"][\"workflow_id\"]}} ('{{$node[\"Webhook\"].json[\"body\"][\"topic\"]}}') is now live on WordPress!",
+        "otherOptions": {}
+      },
+      "name": "Send Slack Published Message",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 1,
+      "position": [
+        550,
+        500
+      ],
+      "credentials": {
+        "slackApi": {
+          "id": "slackApi",
+          "name": "Slack account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "If Review Required",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "If Published",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Review Required": {
+      "main": [
+        [
+          {
+            "node": "Send Slack Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Published": {
+      "main": [
+        [
+          {
+            "node": "Send Slack Published Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {}
+}
