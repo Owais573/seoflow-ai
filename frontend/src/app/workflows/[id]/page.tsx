@@ -183,10 +183,39 @@ export default function WorkflowDetails() {
                             <label className="block text-sm font-medium mb-1">Featured Image Prompt</label>
                             <textarea className="w-full border p-2 rounded" rows={2} value={editPrompt} onChange={e => setEditPrompt(e.target.value)} />
                         </div>
-                        <div className="bg-gray-50 p-4 rounded border">
-                            <label className="block text-sm font-medium mb-1">Upload Featured Image (Optional)</label>
-                            <p className="text-xs text-gray-500 mb-3">Use the prompt above to generate an image in Midjourney/DALL-E, then upload it here to be attached to your post.</p>
-                            <input type="file" accept="image/*" onChange={e => setImageFile(e.target.files?.[0] || null)} className="text-sm w-full" />
+                        <div className="bg-white rounded-lg border-2 border-dashed border-gray-300 relative hover:bg-gray-50 transition-colors overflow-hidden">
+                            <input 
+                                type="file" 
+                                accept="image/*" 
+                                onChange={e => setImageFile(e.target.files?.[0] || null)} 
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
+                                title=""
+                            />
+                            <div className="p-8 text-center flex flex-col items-center justify-center min-h-[200px]">
+                                {imageFile ? (
+                                    <div className="flex flex-col items-center w-full">
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img 
+                                            src={URL.createObjectURL(imageFile)} 
+                                            alt="Preview" 
+                                            className="max-h-64 object-contain rounded shadow-sm mb-4" 
+                                        />
+                                        <p className="text-sm font-medium text-blue-600 truncate max-w-xs">{imageFile.name}</p>
+                                        <p className="text-xs text-gray-500 mt-1">Click or drag a new image to replace</p>
+                                    </div>
+                                ) : (
+                                    <div>
+                                        <div className="mx-auto w-12 h-12 mb-4 text-gray-300">
+                                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                            </svg>
+                                        </div>
+                                        <label className="block text-base font-semibold text-gray-700 mb-1">Upload Featured Image (Optional)</label>
+                                        <p className="text-sm text-gray-500">Drag and drop an image here, or click to select.</p>
+                                        <p className="text-xs text-gray-400 mt-3 max-w-sm mx-auto">Use the prompt above to generate an image in Midjourney/DALL-E, then upload it here.</p>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 ) : (
