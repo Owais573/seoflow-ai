@@ -154,10 +154,11 @@ npm run dev
 ## 4. How to Use (User Guide)
 
 1. **Create a Content Brief**: Open `http://localhost:3000` and click **New Content Brief**. Enter your desired Topic (e.g., "AI in Healthcare") and Primary Keyword.
-2. **Watch the Magic**: Submit the form. You will be redirected to the Workflow Details page. Thanks to SSE, you will see a progress bar move in real-time as the agents (Research -> Content -> SEO -> Media) do their work.
+2. **Watch the Magic**: Submit the form. You will be redirected to the Workflow Details page. Thanks to Server-Sent Events (SSE), you will see a progress bar move in real-time as the agents (Research -> Content -> SEO -> Media) do their work, alongside real-time backend terminal logs.
 3. **Get Notified**: Once the Media Agent finishes, the workflow pauses. An alert is sent via the n8n webhook (which you can route to Slack/Discord).
-4. **Human Review**: On the dashboard, the workflow will show **Action Required: Human Review**. Read through the generated draft.
+4. **Human Review**: On the dashboard, the workflow will show **Action Required: Human Review**. The system automatically fetches the LangGraph state memory so you can directly read, review, and manually edit the generated SEO Title, Meta Description, Content Draft, and Image Prompt in a rich form UI.
 5. **Publish**: Click **Approve & Publish**. The LangGraph workflow resumes, executing the Publishing Agent, which instantly pushes the article to your live WordPress site.
+6. **Delete Workflow**: To clean up, simply click the red trash bin icon next to any workflow on the main dashboard. You'll see a smooth inline confirmation and a real-time loading spinner as the system cascade-deletes the workflow and associated briefs.
 
 ---
 
@@ -170,7 +171,16 @@ npm run dev
 | `/api/workflows/{id}` | `GET` | Fetches details for a specific workflow. |
 | `/api/workflows/{id}/start` | `POST` | Triggers the LangGraph background execution. |
 | `/api/workflows/{id}/stream` | `GET` (SSE) | Subscribes to real-time progress updates. |
-| `/api/workflows/{id}/approve` | `POST` | Approves a pending workflow and resumes Graph for publishing. |
+| `/api/workflows/{id}/state` | `GET` | Fetches the internal LangGraph state (draft content, metadata) for UI review. |
+| `/api/workflows/{id}/approve` | `POST` | Approves a pending workflow (accepting human edits) and resumes Graph for publishing. |
+| `/api/workflows/{id}` | `DELETE` | Cascade-deletes a workflow and its associated brief. |
+
+---
+
+## 6. Recent Enhancements (Changelog)
+- **Real-Time UI & Logging**: Fixed SSE SQLAlchemy caching to enable seamless 10% -> 90% UI progress tracking without refreshing. Added real-time terminal `print()` logs to track LangGraph agent progression.
+- **Editable Human Review UI**: Upgraded the frontend to fetch the AI's internal memory state and display it in an interactive form, allowing human editors to manually tweak the content before publishing.
+- **Cascading Deletion UI/UX**: Added a robust frontend deletion flow with inline confirmations and loading spinners, supported by a backend route that cascade-deletes workflows and content briefs.
 
 ---
 
