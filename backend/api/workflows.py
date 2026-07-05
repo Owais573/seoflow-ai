@@ -2,6 +2,7 @@ import asyncio
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy import delete
 from typing import List
 
 from database.session import get_db, get_db_context
@@ -52,8 +53,26 @@ async def get_workflow_state(workflow_id: int):
     config = {"configurable": {"thread_id": str(workflow_id)}}
     state = await graph.aget_state(config)
     if not state or not state.values:
-        raise HTTPException(status_code=404, detail="State not found")
+        # Return a graceful fallback instead of 404 because MemorySaver wipes on server reload
+        return {
+            "draft_content": "Memory state was lost (likely due to server reload). Please create a new workflow.",
+            "seo_metadata": {"title": "State Lost", "description": "State Lost"},
+            "media_prompt": "State Lost"
+        }
     return state.values
+
+@router.delete("/{workflow_id}")
+async def delete_workflow(workflow_id: int, db: AsyncSession = Depends(get_db)):
+    workflow = await get_workflow(workflow_id, db)
+    brief_id = workflow.brief_id
+    
+    # Delete workflow
+    await db.execute(delete(Workflow).where(Workflow.id == workflow_id))
+    # Delete associated brief
+    await db.execute(delete(ContentBrief).where(ContentBrief.id == brief_id))
+    await db.commit()
+    
+    return {"status": "deleted", "workflow_id": workflow_id}
 
 @router.post("/{workflow_id}/start")
 async def start_workflow(workflow_id: int, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db)):

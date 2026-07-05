@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { api, Workflow } from "@/services/api";
 import { Button } from "@/components/ui/button";
+import { Trash2 } from "lucide-react";
 
 export default function Dashboard() {
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
@@ -15,6 +16,18 @@ export default function Dashboard() {
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
+
+  const handleDelete = async (e: React.MouseEvent, id: number) => {
+    e.preventDefault();
+    if (!confirm("Are you sure you want to delete this workflow?")) return;
+    try {
+      await api.deleteWorkflow(id);
+      setWorkflows(workflows.filter(wf => wf.id !== id));
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete workflow.");
+    }
+  };
 
   return (
     <div className="container mx-auto p-8 max-w-5xl">
@@ -40,9 +53,14 @@ export default function Dashboard() {
                   <h3 className="font-semibold text-lg">Workflow #{wf.id}</h3>
                   <p className="text-sm text-gray-500">Status: {wf.status}</p>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm text-gray-500">Progress: {wf.progress}%</p>
-                  <p className="text-xs text-gray-400 mt-1">{new Date(wf.created_at).toLocaleDateString()}</p>
+                <div className="flex items-center gap-6">
+                  <div className="text-right">
+                    <p className="text-sm text-gray-500">Progress: {wf.progress}%</p>
+                    <p className="text-xs text-gray-400 mt-1">{new Date(wf.created_at).toLocaleDateString()}</p>
+                  </div>
+                  <Button variant="ghost" size="icon" onClick={(e) => handleDelete(e, wf.id)} className="text-red-500 hover:text-red-700 hover:bg-red-50">
+                    <Trash2 className="w-5 h-5" />
+                  </Button>
                 </div>
               </div>
             </Link>

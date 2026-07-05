@@ -48,6 +48,12 @@ export const api = {
         return response.json();
     },
 
+    async deleteWorkflow(id: number) {
+        const response = await fetch(`${API_BASE_URL}/workflows/${id}`, { method: "DELETE" });
+        if (!response.ok) throw new Error("Failed to delete workflow");
+        return response.json();
+    },
+
     async startWorkflow(id: number) {
         const response = await fetch(`${API_BASE_URL}/workflows/${id}/start`, { method: "POST" });
         if (!response.ok) throw new Error("Failed to start workflow");
