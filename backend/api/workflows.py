@@ -63,14 +63,20 @@ async def get_workflow_state(workflow_id: int):
 
 @router.delete("/{workflow_id}")
 async def delete_workflow(workflow_id: int, db: AsyncSession = Depends(get_db)):
+    print(f"[Workflow {workflow_id}] Initiating deletion process...")
     workflow = await get_workflow(workflow_id, db)
     brief_id = workflow.brief_id
     
     # Delete workflow
     await db.execute(delete(Workflow).where(Workflow.id == workflow_id))
+    print(f"[Workflow {workflow_id}] Deleted Workflow record from database.")
+    
     # Delete associated brief
     await db.execute(delete(ContentBrief).where(ContentBrief.id == brief_id))
+    print(f"[Workflow {workflow_id}] Deleted associated ContentBrief (ID: {brief_id}) from database.")
+    
     await db.commit()
+    print(f"[Workflow {workflow_id}] Deletion committed successfully.")
     
     return {"status": "deleted", "workflow_id": workflow_id}
 
