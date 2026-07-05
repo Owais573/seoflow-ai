@@ -320,10 +320,10 @@ Included
 ✅ AI Article Writing
 ✅ SEO Optimization
 ✅ FAQ Generation
-✅ JSON-LD Schema
+❌ JSON-LD Schema (Deferred to V2)
 ✅ Featured Image Prompt Generation
 ✅ Human Approval UI
-✅ Image Upload Support (User uploads manually generated image)
+❌ Image Upload Support (Deferred to V2)
 ✅ WordPress Publishing
 ✅ Workflow History (PostgreSQL)
 ✅ Workflow Orchestration via LangGraph
@@ -532,7 +532,7 @@ SEOFlow AI follows a modular Agentic AI architecture utilizing LangGraph for sta
    LangGraph Engine    AI Provider        PostgreSQL
           │                 │                 │
           ▼                 ▼                 ▼
-   Agent Nodes        GPT-4.1-mini       Database Models
+   Agent Nodes        gpt-4o-mini       Database Models
           │
           ▼
    n8n Docker Container (Webhook Listener for Slack/Discord Notifications)
@@ -597,7 +597,7 @@ Frontend: Next.js
 Backend: FastAPI (with LangGraph)
 Database: PostgreSQL
 Automation: n8n (Docker)
-LLM: GPT-4.1-mini
+LLM: gpt-4o-mini
 CMS: WordPress
 
 ---
@@ -610,7 +610,7 @@ SEOFlow AI uses specialized AI agents represented as nodes in LangGraph.
 Purpose: Generate keyword intelligence.
 Input: Topic, Keywords
 Output: Search Intent, Related Keywords, Questions, Suggested Outline, Competitor URLs
-Uses: GPT-4.1-mini
+Uses: gpt-4o-mini
 
 ## Content Agent
 Purpose: Generate article.
@@ -688,25 +688,8 @@ Database: PostgreSQL
 Stores: Topic, Keywords, Tone, Audience, Length
 
 ### workflows
-Stores: Status, Current Step, Progress, Created At, Completed At
-
-### workflow_logs
-Stores: Execution history, Graph State changes.
-
-### research_results
-Stores: Research Agent output.
-
-### content_drafts
-Stores: Generated articles.
-
-### media_prompts
-Stores: Image Prompt, Alt Text, Caption
-
-### reviews
-Stores: Approval history.
-
-### published_articles
-Stores: Published URLs.
+Stores: Status, Current Step, Progress, Created At, Completed At. 
+*(Note: LangGraph's persistent state checkpointing manages the interim generated content, research results, and prompts dynamically without requiring strictly normalized database tables).*
 
 ---
 
@@ -717,15 +700,12 @@ Content Brief
       ▼
    Workflow
       │
- ┌────┼─────┐
- ▼    ▼     ▼
-Research Draft Media
-      │
-      ▼
-   Review
-      │
-      ▼
-Published Article
+  ┌───┴────┐
+  ▼        ▼
+Graph State (LangGraph MemorySaver)
+  │        
+  ▼        
+WordPress Post
 ```
 
 ---
