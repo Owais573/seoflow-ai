@@ -532,7 +532,7 @@ SEOFlow AI follows a modular Agentic AI architecture utilizing LangGraph for sta
    LangGraph Engine    AI Provider        PostgreSQL
           │                 │                 │
           ▼                 ▼                 ▼
-   Agent Nodes        gpt-4o-mini       Database Models
+   Agent Nodes        gpt-4.1-mini       Database Models
           │
           ▼
    n8n Docker Container (Webhook Listener for Slack/Discord Notifications)
@@ -597,7 +597,7 @@ Frontend: Next.js
 Backend: FastAPI (with LangGraph)
 Database: PostgreSQL
 Automation: n8n (Docker)
-LLM: gpt-4o-mini
+LLM: gpt-4.1-mini
 CMS: WordPress
 
 ---
@@ -610,7 +610,7 @@ SEOFlow AI uses specialized AI agents represented as nodes in LangGraph.
 Purpose: Generate keyword intelligence.
 Input: Topic, Keywords
 Output: Search Intent, Related Keywords, Questions, Suggested Outline, Competitor URLs
-Uses: gpt-4o-mini
+Uses: gpt-4.1-mini
 
 ## Content Agent
 Purpose: Generate article.

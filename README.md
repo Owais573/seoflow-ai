@@ -65,7 +65,7 @@ The core engine is driven by **LangGraph**, routing tasks between specialized ag
 - **Framework**: FastAPI
 - **Language**: Python 3.12 (managed via `uv`)
 - **AI Orchestration**: LangGraph & LangChain Core
-- **LLM**: OpenAI (`gpt-4o-mini`)
+- **LLM**: OpenAI (`gpt-4.1-mini`)
 
 ### Database & Infrastructure
 - **Database**: PostgreSQL (via Docker Compose)
@@ -105,8 +105,9 @@ Create a file named <code>.env</code> in the <code>backend/</code> folder:
 # Database Configuration
 DATABASE_URL=postgresql+asyncpg://seoflow_user:seoflow_password@localhost/seoflow_db
 
-# OpenAI API Key (Required for LangChain/LangGraph)
+# OpenAI API Key and Model
 OPENAI_API_KEY=sk-your-openai-api-key
+OPENAI_MODEL=gpt-4.1-mini
 
 # n8n Webhook URL (For human-review notifications)
 N8N_WEBHOOK_URL=http://localhost:5678/webhook/review-pending

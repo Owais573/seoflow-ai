@@ -5,7 +5,7 @@ from langchain_core.output_parsers import StrOutputParser
 from workflows.state import WorkflowState
 import httpx
 
-llm = ChatOpenAI(model="gpt-4o-mini", api_key=os.getenv("OPENAI_API_KEY"))
+llm = ChatOpenAI(model=os.getenv("OPENAI_MODEL", "gpt-4.1-mini"), api_key=os.getenv("OPENAI_API_KEY"))
 
 async def trigger_n8n_webhook(workflow_id: int, topic: str):
     webhook_url = os.getenv("N8N_WEBHOOK_URL")
