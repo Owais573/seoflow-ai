@@ -24,6 +24,31 @@ export interface WorkflowLog {
     agent: string;
     action: string;
     timestamp: string;
+    workflow_id?: number; // for global stream
+}
+
+export interface AgentStat {
+    name: string;
+    avg_latency: number;
+    max_latency: number;
+    prompt_tokens: number;
+    completion_tokens: number;
+}
+
+export interface MonitoringStats {
+    throughput: {
+        active: number;
+        completed: number;
+        failed: number;
+        pending_review: number;
+        total: number;
+    };
+    tokens: {
+        prompt: number;
+        completion: number;
+    };
+    avg_system_latency: number;
+    agents: AgentStat[];
 }
 
 export const api = {
@@ -93,6 +118,12 @@ export const api = {
         });
         
         if (!response.ok) throw new Error("Failed to upload image");
+        return response.json();
+    },
+
+    async getMonitoringStats(): Promise<MonitoringStats> {
+        const response = await fetch(`${API_BASE_URL}/monitoring/stats`);
+        if (!response.ok) throw new Error("Failed to fetch monitoring stats");
         return response.json();
     }
 };

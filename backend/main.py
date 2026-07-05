@@ -17,9 +17,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-from api import workflows
+from api import workflows, monitoring
 
 app.include_router(workflows.router)
+app.include_router(monitoring.router)
 
 @app.get("/")
 def read_root():

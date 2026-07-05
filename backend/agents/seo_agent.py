@@ -31,7 +31,12 @@ async def seo_node(state: WorkflowState) -> dict:
     usage = result_raw["raw"].usage_metadata or {}
     prompt_tokens = usage.get("input_tokens", 0)
     completion_tokens = usage.get("output_tokens", 0)
-    await log_workflow_event(state["workflow_id"], "SEO Agent", f"Extracted SEO Title: '{result['seo_title']}' [Tokens: ↑{prompt_tokens} | ↓{completion_tokens}]")
+    await log_workflow_event(
+        state["workflow_id"], 
+        "SEO Agent", 
+        f"Extracted SEO Title: '{result['seo_title']}' [Tokens: ↑{prompt_tokens} | ↓{completion_tokens}]",
+        details={"prompt_tokens": prompt_tokens, "completion_tokens": completion_tokens}
+    )
     
     return {
         "seo_metadata": {

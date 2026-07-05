@@ -38,7 +38,12 @@ async def media_node(state: WorkflowState) -> dict:
     usage = result_raw.usage_metadata or {}
     prompt_tokens = usage.get("input_tokens", 0)
     completion_tokens = usage.get("output_tokens", 0)
-    await log_workflow_event(state["workflow_id"], "Media Agent", f"Image prompt generated. Prompt length: {len(result)} characters. [Tokens: ↑{prompt_tokens} | ↓{completion_tokens}]")
+    await log_workflow_event(
+        state["workflow_id"], 
+        "Media Agent", 
+        f"Image prompt generated. Prompt length: {len(result)} characters. [Tokens: ↑{prompt_tokens} | ↓{completion_tokens}]",
+        details={"prompt_tokens": prompt_tokens, "completion_tokens": completion_tokens}
+    )
     
     # Trigger webhook to notify human that workflow is waiting for review
     await trigger_n8n_webhook(state.get("workflow_id"), topic)

@@ -23,7 +23,12 @@ async def content_node(state: WorkflowState) -> dict:
     usage = result_raw.usage_metadata or {}
     prompt_tokens = usage.get("input_tokens", 0)
     completion_tokens = usage.get("output_tokens", 0)
-    await log_workflow_event(state["workflow_id"], "Content Agent", f"Generated Markdown draft. Total length: {len(result)} characters. [Tokens: ↑{prompt_tokens} | ↓{completion_tokens}]")
+    await log_workflow_event(
+        state["workflow_id"], 
+        "Content Agent", 
+        f"Generated Markdown draft. Total length: {len(result)} characters. [Tokens: ↑{prompt_tokens} | ↓{completion_tokens}]",
+        details={"prompt_tokens": prompt_tokens, "completion_tokens": completion_tokens}
+    )
     
     return {
         "draft_content": result,

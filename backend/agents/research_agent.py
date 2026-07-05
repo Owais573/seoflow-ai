@@ -32,7 +32,12 @@ async def research_node(state: WorkflowState) -> dict:
     usage = result_raw["raw"].usage_metadata or {}
     prompt_tokens = usage.get("input_tokens", 0)
     completion_tokens = usage.get("output_tokens", 0)
-    await log_workflow_event(state["workflow_id"], "Research Agent", f"Compiled research report. Identified {len(result['related_keywords'])} LSI keywords and {len(result['outline'])} outline sections. [Tokens: ↑{prompt_tokens} | ↓{completion_tokens}]")
+    await log_workflow_event(
+        state["workflow_id"], 
+        "Research Agent", 
+        f"Compiled research report. Identified {len(result['related_keywords'])} LSI keywords and {len(result['outline'])} outline sections. [Tokens: ↑{prompt_tokens} | ↓{completion_tokens}]",
+        details={"prompt_tokens": prompt_tokens, "completion_tokens": completion_tokens}
+    )
     
     return {
         "research_data": {

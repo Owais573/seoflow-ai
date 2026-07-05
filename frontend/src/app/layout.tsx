@@ -47,13 +47,18 @@ export default function RootLayout({
                   SEOFlow AI
                 </span>
               </Link>
-              <div className="flex items-center gap-4">
-                <ThemeToggle />
-                <Link href="/brief/new">
-                  <Button className="bg-gray-900 hover:bg-gray-800 dark:bg-white dark:hover:bg-gray-200 dark:text-gray-900 text-white font-medium rounded-full px-6 transition-all shadow-sm">
-                    + New Brief
-                  </Button>
+              <div className="flex items-center gap-6">
+                <Link href="/monitoring" className="text-sm font-medium text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
+                  Monitoring
                 </Link>
+                <div className="flex items-center gap-4">
+                  <ThemeToggle />
+                  <Link href="/brief/new">
+                    <Button className="bg-gray-900 hover:bg-gray-800 dark:bg-white dark:hover:bg-gray-200 dark:text-gray-900 text-white font-medium rounded-full px-6 transition-all shadow-sm">
+                      + New Brief
+                    </Button>
+                  </Link>
+                </div>
               </div>
             </div>
           </header>
