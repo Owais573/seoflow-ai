@@ -1,5 +1,6 @@
 import os
 from langchain_openai import ChatOpenAI
+from langchain_core.prompts import ChatPromptTemplate
 from workflows.state import WorkflowState
 from database.session import log_workflow_event
 import httpx

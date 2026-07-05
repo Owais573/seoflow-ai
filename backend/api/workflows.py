@@ -111,6 +111,16 @@ async def delete_workflow(workflow_id: int, db: AsyncSession = Depends(get_db)):
     workflow = await get_workflow(workflow_id, db)
     brief_id = workflow.brief_id
     
+    from database.models import WorkflowLog, ContentDraft, MediaPrompt, Review, PublishedArticle
+    
+    # Cascade delete all dependent records first
+    await db.execute(delete(WorkflowLog).where(WorkflowLog.workflow_id == workflow_id))
+    await db.execute(delete(ContentDraft).where(ContentDraft.workflow_id == workflow_id))
+    await db.execute(delete(MediaPrompt).where(MediaPrompt.workflow_id == workflow_id))
+    await db.execute(delete(Review).where(Review.workflow_id == workflow_id))
+    await db.execute(delete(PublishedArticle).where(PublishedArticle.workflow_id == workflow_id))
+    print(f"[Workflow {workflow_id}] Deleted dependent records from database.")
+    
     # Delete workflow
     await db.execute(delete(Workflow).where(Workflow.id == workflow_id))
     print(f"[Workflow {workflow_id}] Deleted Workflow record from database.")
