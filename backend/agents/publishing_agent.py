@@ -10,8 +10,15 @@ async def publishing_node(state: WorkflowState) -> dict:
     title = seo_metadata.get("title", state.get("topic", "Draft Title"))
     media_id = state.get("media_id")
     
+    # Remove leading H1 title to prevent duplicate titles in WordPress
+    draft_content_clean = draft_content.strip()
+    if draft_content_clean.startswith("# "):
+        # split by newline and remove the first line
+        lines = draft_content_clean.split('\n')
+        draft_content_clean = '\n'.join(lines[1:]).strip()
+    
     # Convert Markdown to HTML
-    html_content = markdown.markdown(draft_content)
+    html_content = markdown.markdown(draft_content_clean)
     
     wp_url = os.getenv("WP_URL")
     wp_username = os.getenv("WP_USERNAME")

@@ -41,7 +41,7 @@ export default function WorkflowDetails() {
           };
         });
         
-        if (["PENDING_REVIEW", "PUBLISHED", "FAILED"].includes(data.status)) {
+        if (data.status === "PENDING_REVIEW" || data.status === "FAILED" || (data.status === "PUBLISHED" && data.progress === 100)) {
             eventSource.close();
         }
       } catch (err) {
@@ -96,7 +96,7 @@ export default function WorkflowDetails() {
         eventSource.onmessage = (event) => {
             const data = JSON.parse(event.data);
             setWorkflow(prev => prev ? {...prev, progress: data.progress, status: data.status, current_step: data.current_step} : prev);
-            if (["PUBLISHED", "FAILED"].includes(data.status)) {
+            if (data.status === "FAILED" || (data.status === "PUBLISHED" && data.progress === 100)) {
                 eventSource.close();
                 setApproving(false);
                 if (data.status === "PUBLISHED") {

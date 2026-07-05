@@ -183,7 +183,7 @@ async def stream_workflow_progress(workflow_id: int, db: AsyncSession = Depends(
                     }
                     previous_progress = workflow.progress
                     
-                if workflow.status in [WorkflowStatus.PENDING_REVIEW, WorkflowStatus.PUBLISHED, WorkflowStatus.FAILED]:
+                if workflow.status in [WorkflowStatus.PENDING_REVIEW, WorkflowStatus.FAILED] or (workflow.status == WorkflowStatus.PUBLISHED and workflow.progress == 100):
                     break
                     
             await asyncio.sleep(2) # Poll every 2 seconds
