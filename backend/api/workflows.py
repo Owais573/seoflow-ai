@@ -11,55 +11,7 @@ from schemas.workflows import WorkflowResponse, WorkflowDetailResponse, Approval
 
 # ... (down below)
 
-@router.post("/{workflow_id}/approve")
-async def approve_workflow(workflow_id: int, approval: ApprovalRequest, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db)):
-    workflow = await get_workflow(workflow_id, db)
-    if workflow.status != WorkflowStatus.PENDING_REVIEW:
-        raise HTTPException(status_code=400, detail="Workflow is not pending review")
-        
-    workflow.status = WorkflowStatus.PUBLISHED # Temporarily set to PUBLISHING essentially
-    workflow.current_step = "Publishing to WordPress..."
-    workflow.progress = 95
-    await db.commit()
-    
-    from workflows.graph import graph
-    
-    async def resume_graph():
-        config = {"configurable": {"thread_id": str(workflow_id)}}
-        
-        # 1. Update state with human edits
-        updates = {}
-        if approval.content:
-            updates["draft_content"] = approval.content
-        if approval.title or approval.meta_description:
-            updates["seo_metadata"] = {
-                "title": approval.title,
-                "description": approval.meta_description
-            }
-        if approval.media_prompt:
-            updates["media_prompt"] = approval.media_prompt
-            
-        if updates:
-            graph.update_state(config, updates)
-            
-        # 2. Resume graph execution (this will run the publishing_node)
-        final_state = await graph.ainvoke(None, config)
-        
-        # 3. Update DB with final state
-        async with get_db_context() as local_db:
-            wf_res = await local_db.execute(select(Workflow).where(Workflow.id == workflow_id))
-            wf = wf_res.scalar_one_or_none()
-            if final_state.get("status") == "PUBLISHED":
-                wf.status = WorkflowStatus.PUBLISHED
-            else:
-                wf.status = WorkflowStatus.FAILED
-            wf.current_step = final_state.get("current_step", "Finished")
-            wf.progress = final_state.get("progress", 100)
-            await local_db.commit()
 
-    background_tasks.add_task(resume_graph)
-    
-    return {"status": "publishing", "workflow_id": workflow_id}
 from sse_starlette.sse import EventSourceResponse
 
 router = APIRouter(prefix="/api/workflows", tags=["workflows"])
@@ -165,3 +117,53 @@ async def stream_workflow_progress(workflow_id: int, db: AsyncSession = Depends(
             await asyncio.sleep(2) # Poll every 2 seconds
             
     return EventSourceResponse(event_generator())
+
+@router.post("/{workflow_id}/approve")
+async def approve_workflow(workflow_id: int, approval: ApprovalRequest, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db)):
+    workflow = await get_workflow(workflow_id, db)
+    if workflow.status != WorkflowStatus.PENDING_REVIEW:
+        raise HTTPException(status_code=400, detail="Workflow is not pending review")
+        
+    workflow.status = WorkflowStatus.PUBLISHED # Temporarily set to PUBLISHING essentially
+    workflow.current_step = "Publishing to WordPress..."
+    workflow.progress = 95
+    await db.commit()
+    
+    from workflows.graph import graph
+    
+    async def resume_graph():
+        config = {"configurable": {"thread_id": str(workflow_id)}}
+        
+        # 1. Update state with human edits
+        updates = {}
+        if approval.content:
+            updates["draft_content"] = approval.content
+        if approval.title or approval.meta_description:
+            updates["seo_metadata"] = {
+                "title": approval.title,
+                "description": approval.meta_description
+            }
+        if approval.media_prompt:
+            updates["media_prompt"] = approval.media_prompt
+            
+        if updates:
+            graph.update_state(config, updates)
+            
+        # 2. Resume graph execution (this will run the publishing_node)
+        final_state = await graph.ainvoke(None, config)
+        
+        # 3. Update DB with final state
+        async with get_db_context() as local_db:
+            wf_res = await local_db.execute(select(Workflow).where(Workflow.id == workflow_id))
+            wf = wf_res.scalar_one_or_none()
+            if final_state.get("status") == "PUBLISHED":
+                wf.status = WorkflowStatus.PUBLISHED
+            else:
+                wf.status = WorkflowStatus.FAILED
+            wf.current_step = final_state.get("current_step", "Finished")
+            wf.progress = final_state.get("progress", 100)
+            await local_db.commit()
+
+    background_tasks.add_task(resume_graph)
+    
+    return {"status": "publishing", "workflow_id": workflow_id}
