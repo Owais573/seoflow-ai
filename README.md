@@ -158,7 +158,8 @@ npm run dev
 3. **Get Notified**: Once the Media Agent finishes, the workflow pauses. An alert is sent via the n8n webhook (which you can route to Slack/Discord).
 4. **Human Review**: On the dashboard, the workflow will show **Action Required: Human Review**. The system automatically fetches the LangGraph state memory so you can directly read, review, and manually edit the generated SEO Title, Meta Description, Content Draft, and Image Prompt in a rich form UI.
 5. **Publish**: Click **Approve & Publish**. The LangGraph workflow resumes, executing the Publishing Agent, which instantly pushes the article to your live WordPress site.
-6. **Delete Workflow**: To clean up, simply click the red trash bin icon next to any workflow on the main dashboard. You'll see a smooth inline confirmation and a real-time loading spinner as the system cascade-deletes the workflow and associated briefs.
+6. **System Observability (Monitoring)**: Click the **Monitoring** link in the top navigation bar to open the global telemetry dashboard in a new tab. Here you can track real-time KPI metrics (Active Streams, Token Burn Rate, System Latency), view Agent Efficiency breakdowns to spot execution spikes, and watch a unified live terminal streaming logs from all active workflows across the platform.
+7. **Delete Workflow**: To clean up, simply click the red trash bin icon next to any workflow on the main dashboard. You'll see a smooth inline confirmation and a real-time loading spinner as the system cascade-deletes the workflow and associated briefs.
 
 ---
 
