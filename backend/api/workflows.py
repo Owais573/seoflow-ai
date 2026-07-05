@@ -1,5 +1,8 @@
 import asyncio
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+import os
+import base64
+import httpx
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import delete
@@ -60,6 +63,37 @@ async def get_workflow_state(workflow_id: int):
             "media_prompt": "State Lost"
         }
     return state.values
+
+@router.post("/{workflow_id}/upload-image")
+async def upload_image(workflow_id: int, file: UploadFile = File(...)):
+    content = await file.read()
+    
+    wp_url = os.getenv("WP_URL")
+    wp_username = os.getenv("WP_USERNAME")
+    wp_app_password = os.getenv("WP_APP_PASSWORD")
+
+    if not wp_url or not wp_app_password:
+        raise HTTPException(status_code=400, detail="WordPress credentials not configured")
+
+    credentials = f"{wp_username}:{wp_app_password}"
+    encoded_credentials = base64.b64encode(credentials.encode()).decode("utf-8")
+    headers = {
+        "Authorization": f"Basic {encoded_credentials}",
+        "Content-Type": file.content_type,
+        "Content-Disposition": f'attachment; filename="{file.filename}"'
+    }
+    
+    endpoint = f"{wp_url.rstrip('/')}/wp-json/wp/v2/media"
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(endpoint, content=content, headers=headers)
+            if response.status_code in [200, 201]:
+                media_data = response.json()
+                return {"media_id": media_data.get("id")}
+            else:
+                raise HTTPException(status_code=response.status_code, detail=response.text)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.delete("/{workflow_id}")
 async def delete_workflow(workflow_id: int, db: AsyncSession = Depends(get_db)):
@@ -183,6 +217,8 @@ async def approve_workflow(workflow_id: int, approval: ApprovalRequest, backgrou
             }
         if approval.media_prompt:
             updates["media_prompt"] = approval.media_prompt
+        if approval.media_id:
+            updates["media_id"] = approval.media_id
             
         if updates:
             graph.update_state(config, updates)

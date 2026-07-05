@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { api, Workflow, API_BASE_URL } from "@/services/api";
 import { Button } from "@/components/ui/button";
+import { ExternalLink, Loader2 } from "lucide-react";
 
 export default function WorkflowDetails() {
   const params = useParams();
@@ -16,6 +17,8 @@ export default function WorkflowDetails() {
   const [editDesc, setEditDesc] = useState("");
   const [editContent, setEditContent] = useState("");
   const [editPrompt, setEditPrompt] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [statusMsg, setStatusMsg] = useState("");
 
   useEffect(() => {
     // Fetch initial workflow details
@@ -54,7 +57,7 @@ export default function WorkflowDetails() {
   }, [workflowId]);
 
   useEffect(() => {
-     if (workflow?.status === "PENDING_REVIEW" && !workflowState) {
+     if ((workflow?.status === "PENDING_REVIEW" || workflow?.status === "PUBLISHED") && !workflowState) {
          api.getWorkflowState(Number(workflowId)).then(state => {
              setWorkflowState(state);
              setEditTitle(state.seo_metadata?.title || "");
@@ -69,16 +72,23 @@ export default function WorkflowDetails() {
 
   const handleApprove = async () => {
     setApproving(true);
+    setStatusMsg("Publishing to WordPress...");
     try {
+        let media_id = undefined;
+        if (imageFile) {
+            setStatusMsg("Uploading Image to WordPress...");
+            const mediaResponse = await api.uploadImage(Number(workflowId), imageFile);
+            media_id = mediaResponse.media_id;
+        }
+
+        setStatusMsg("Publishing to WordPress...");
         await api.approveWorkflow(Number(workflowId), {
             title: editTitle,
             meta_description: editDesc,
             content: editContent,
-            media_prompt: editPrompt
+            media_prompt: editPrompt,
+            media_id: media_id
         });
-        // The SSE stream should technically have been closed, but if we resume it or poll, we can get updates.
-        // For MVP, we'll just alert and let the SSE stream (if still open) or manual refresh catch it.
-        alert("Workflow approved! Publishing to WordPress...");
         
         // Re-open SSE stream to catch the publishing updates
         const eventSource = new EventSource(`${API_BASE_URL}/workflows/${workflowId}/stream`);
@@ -88,6 +98,9 @@ export default function WorkflowDetails() {
             if (["PUBLISHED", "FAILED"].includes(data.status)) {
                 eventSource.close();
                 setApproving(false);
+                if (data.status === "PUBLISHED") {
+                    api.getWorkflowState(Number(workflowId)).then(setWorkflowState);
+                }
             }
         };
     } catch (err) {
@@ -124,6 +137,20 @@ export default function WorkflowDetails() {
             </div>
         </div>
 
+        {workflow.status === "PUBLISHED" && workflowState?.published_url && (
+            <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center justify-between">
+                <div>
+                    <h3 className="font-bold text-green-800">Successfully Published!</h3>
+                    <p className="text-sm text-green-700">Your article is live on WordPress.</p>
+                </div>
+                <a href={workflowState.published_url} target="_blank" rel="noopener noreferrer">
+                    <Button className="bg-green-600 hover:bg-green-700 flex items-center gap-2">
+                        View Post <ExternalLink className="w-4 h-4" />
+                    </Button>
+                </a>
+            </div>
+        )}
+
         {workflow.status === "PENDING_REVIEW" && (
             <div className="mt-8 p-6 bg-yellow-50 border border-yellow-200 rounded-lg">
                 <h3 className="text-xl font-bold text-yellow-800 mb-4">Action Required: Human Review</h3>
@@ -147,6 +174,11 @@ export default function WorkflowDetails() {
                             <label className="block text-sm font-medium mb-1">Featured Image Prompt</label>
                             <textarea className="w-full border p-2 rounded" rows={2} value={editPrompt} onChange={e => setEditPrompt(e.target.value)} />
                         </div>
+                        <div className="bg-gray-50 p-4 rounded border">
+                            <label className="block text-sm font-medium mb-1">Upload Featured Image (Optional)</label>
+                            <p className="text-xs text-gray-500 mb-3">Use the prompt above to generate an image in Midjourney/DALL-E, then upload it here to be attached to your post.</p>
+                            <input type="file" accept="image/*" onChange={e => setImageFile(e.target.files?.[0] || null)} className="text-sm w-full" />
+                        </div>
                     </div>
                 ) : (
                     <div className="mb-6 italic text-gray-500">Loading generated content for review...</div>
@@ -154,7 +186,12 @@ export default function WorkflowDetails() {
 
                 <div className="flex space-x-4">
                     <Button onClick={handleApprove} disabled={approving} className="bg-green-600 hover:bg-green-700">
-                        {approving ? "Publishing..." : "Approve & Publish"}
+                        {approving ? (
+                            <div className="flex items-center gap-2">
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                {statusMsg}
+                            </div>
+                        ) : "Approve & Publish"}
                     </Button>
                     <Button variant="outline" className="text-red-600 border-red-200 hover:bg-red-50">Reject & Edit</Button>
                 </div>

@@ -2,11 +2,16 @@ import os
 import httpx
 from workflows.state import WorkflowState
 import base64
+import markdown
 
 async def publishing_node(state: WorkflowState) -> dict:
     draft_content = state.get("draft_content", "")
     seo_metadata = state.get("seo_metadata", {})
     title = seo_metadata.get("title", state.get("topic", "Draft Title"))
+    media_id = state.get("media_id")
+    
+    # Convert Markdown to HTML
+    html_content = markdown.markdown(draft_content)
     
     wp_url = os.getenv("WP_URL")
     wp_username = os.getenv("WP_USERNAME")
@@ -31,21 +36,39 @@ async def publishing_node(state: WorkflowState) -> dict:
     # WordPress REST API endpoint for posts
     endpoint = f"{wp_url.rstrip('/')}/wp-json/wp/v2/posts"
     
-    data = {
-        "title": title,
-        "content": draft_content,
-        "status": "draft", # Change to "publish" to automatically publish
-    }
-
     try:
         async with httpx.AsyncClient() as client:
+            # 1. Check or Create Category "AI Articles"
+            cat_id = None
+            cat_search_url = f"{wp_url.rstrip('/')}/wp-json/wp/v2/categories?search=AI Articles"
+            cat_resp = await client.get(cat_search_url, headers=headers)
+            if cat_resp.status_code == 200 and len(cat_resp.json()) > 0:
+                cat_id = cat_resp.json()[0]['id']
+            else:
+                cat_create_url = f"{wp_url.rstrip('/')}/wp-json/wp/v2/categories"
+                cat_create_resp = await client.post(cat_create_url, json={"name": "AI Articles"}, headers=headers)
+                if cat_create_resp.status_code in [200, 201]:
+                    cat_id = cat_create_resp.json()['id']
+                    
+            # 2. Publish Post
+            data = {
+                "title": title,
+                "content": html_content,
+                "status": "publish",
+            }
+            if cat_id:
+                data["categories"] = [cat_id]
+            if media_id:
+                data["featured_media"] = media_id
+                
             response = await client.post(endpoint, json=data, headers=headers)
             if response.status_code in [200, 201]:
                 post_data = response.json()
                 return {
                     "current_step": f"Published to WP (ID: {post_data.get('id')})",
                     "progress": 100,
-                    "status": "PUBLISHED"
+                    "status": "PUBLISHED",
+                    "published_url": post_data.get("link")
                 }
             else:
                 return {

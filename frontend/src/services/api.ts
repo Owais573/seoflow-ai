@@ -60,13 +60,26 @@ export const api = {
         return response.json();
     },
 
-    async approveWorkflow(id: number, data: any) {
+    async approveWorkflow(id: number, data: { title?: string, meta_description?: string, content?: string, media_prompt?: string, media_id?: number }) {
         const response = await fetch(`${API_BASE_URL}/workflows/${id}/approve`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data),
+            body: JSON.stringify(data)
         });
         if (!response.ok) throw new Error("Failed to approve workflow");
+        return response.json();
+    },
+
+    async uploadImage(id: number, file: File) {
+        const formData = new FormData();
+        formData.append("file", file);
+        
+        const response = await fetch(`${API_BASE_URL}/workflows/${id}/upload-image`, {
+            method: "POST",
+            body: formData
+        });
+        
+        if (!response.ok) throw new Error("Failed to upload image");
         return response.json();
     }
 };

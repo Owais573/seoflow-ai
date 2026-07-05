@@ -14,6 +14,8 @@ class WorkflowState(TypedDict):
     draft_content: Optional[str]
     seo_metadata: Optional[Dict[str, str]]
     media_prompt: Optional[str]
+    media_id: Optional[int]
+    published_url: Optional[str]
     
     # Internal state tracking
     current_step: str

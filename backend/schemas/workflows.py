@@ -27,4 +27,4 @@ class ApprovalRequest(BaseModel):
     meta_description: Optional[str] = None
     content: Optional[str] = None
     media_prompt: Optional[str] = None
-    # Usually here the user would also upload the image, but we'll handle the image upload separately or just store a URL.
+    media_id: Optional[int] = None
