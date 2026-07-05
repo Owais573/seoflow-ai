@@ -313,6 +313,9 @@ System KPIs
 
 Included
 ✅ Dashboard with Real-time Progress (SSE/WebSockets)
+✅ Premium Monochrome B2B UI/UX 
+✅ Global System Observability Dashboard (KPIs & Global SSE Telemetry)
+✅ Live Agent Terminal & LLM Token Tracking
 ✅ Keyword Research
 ✅ SERP Analysis
 ✅ Competitor Analysis
@@ -324,10 +327,11 @@ Included
 ✅ Featured Image Prompt Generation
 ✅ Human Approval UI
 ❌ Image Upload Support (Deferred to V2)
-✅ WordPress Publishing
-✅ Workflow History (PostgreSQL)
+✅ WordPress Publishing (with Auto Markdown-to-HTML Conversion)
+✅ Workflow History & Granular JSON Telemetry (PostgreSQL)
 ✅ Workflow Orchestration via LangGraph
 ✅ n8n Automation (Slack/Discord Webhook Notifications for pending reviews)
+✅ Cascading deletion for workflows and associated briefs
 
 Excluded (Future Scope)
 ❌ Google Search Console Monitoring (Future)

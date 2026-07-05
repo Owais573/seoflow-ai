@@ -41,8 +41,16 @@ This guide will walk you through a complete, end-to-end manual test of the SEOFl
 
 ### 2. Monitoring Real-Time Agent Execution
 - [ ] On the Workflow Details page, observe the progress bar and status indicator.
+- [ ] **Check:** Below the progress bar, observe the **Live Agent Execution Logs** terminal. You should see real-time streaming updates of agent actions, including their specific LLM token consumption (e.g., `[Tokens: ↑120 | ↓45]`). You can also click the "Copy Logs" button to copy the entire terminal history.
 - [ ] **Check:** The status should change from `CREATED` -> `RESEARCH` -> `CONTENT_PLANNING` -> `SEO_OPTIMIZATION` -> `PENDING_REVIEW`.
 - [ ] **Check:** The progress bar should smoothly fill up from 0% to 90% as the LangGraph agents communicate in the background.
+
+### 2.5 Global System Observability (Monitoring Dashboard)
+- [ ] Open a new browser tab and navigate to `http://localhost:3000/monitoring` (or click "Monitoring" in the top navigation bar).
+- [ ] **Check:** You should see 4 active KPI cards (Active Streams, Token Burn Rate, System Latency, Human Pipeline).
+- [ ] **Check:** The "System Latency" metric should accurately reflect the active automated processing time (excluding human wait time).
+- [ ] **Check:** The Agent Efficiency Table should list execution latencies and total token counts for each agent.
+- [ ] **Check:** The "Global Log Stream" terminal at the bottom should show live telemetry from any concurrently running workflows.
 
 ### 3. Verification of Agent Outputs (Backend check)
 - [ ] Check the `backend/` terminal window logs. 
