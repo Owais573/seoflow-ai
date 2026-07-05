@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 import { api, Workflow, API_BASE_URL } from "@/services/api";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Loader2 } from "lucide-react";
+import { ExternalLink, Loader2, ArrowLeft } from "lucide-react";
 
 export default function WorkflowDetails() {
   const params = useParams();
@@ -114,6 +115,14 @@ export default function WorkflowDetails() {
 
   return (
     <div className="container mx-auto p-8 max-w-4xl">
+      <div className="mb-6">
+        <Link href="/">
+          <Button variant="ghost" className="text-gray-600 hover:text-gray-900 -ml-4 flex items-center gap-2">
+            <ArrowLeft className="w-4 h-4" /> Back to Dashboard
+          </Button>
+        </Link>
+      </div>
+      
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Workflow #{workflow.id}</h1>
         <span className={`px-4 py-1 rounded-full text-sm font-semibold ${
