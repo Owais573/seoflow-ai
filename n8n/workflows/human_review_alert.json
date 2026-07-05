@@ -78,7 +78,7 @@
     {
       "parameters": {
         "channel": "ENTER_YOUR_SLACK_CHANNEL_HERE",
-        "text": "=✅ *Successfully Published*\n\nWorkflow #{{$node[\"Webhook\"].json[\"body\"][\"workflow_id\"]}} ('{{$node[\"Webhook\"].json[\"body\"][\"topic\"]}}') is now live on WordPress!",
+        "text": "=✅ *Successfully Published*\n\nWorkflow #{{$node[\"Webhook\"].json[\"body\"][\"workflow_id\"]}} ('{{$node[\"Webhook\"].json[\"body\"][\"topic\"]}}') is now live on WordPress!\n\nView Post: {{$node[\"Webhook\"].json[\"body\"][\"post_url\"]}}",
         "otherOptions": {}
       },
       "name": "Send Slack Published Message",

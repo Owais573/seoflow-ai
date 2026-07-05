@@ -277,7 +277,11 @@ async def approve_workflow(workflow_id: int, approval: ApprovalRequest, backgrou
                 b_res = await local_db.execute(select(ContentBrief).where(ContentBrief.id == wf.brief_id))
                 b_row = b_res.scalar_one_or_none()
                 if b_row:
-                    asyncio.create_task(send_n8n_webhook("published", workflow_id, b_row.topic))
+                    from database.models import PublishedArticle
+                    p_res = await local_db.execute(select(PublishedArticle).where(PublishedArticle.workflow_id == workflow_id))
+                    p_row = p_res.scalar_one_or_none()
+                    post_url = p_row.url if p_row else None
+                    asyncio.create_task(send_n8n_webhook("published", workflow_id, b_row.topic, post_url=post_url))
             else:
                 wf.status = WorkflowStatus.FAILED
             wf.current_step = final_state.get("current_step", "Finished")

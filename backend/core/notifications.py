@@ -5,7 +5,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-async def send_n8n_webhook(event: str, workflow_id: int, topic: str):
+async def send_n8n_webhook(event: str, workflow_id: int, topic: str, post_url: str = None):
     """
     Sends an async HTTP POST to the n8n webhook URL without blocking.
     """
@@ -18,7 +18,8 @@ async def send_n8n_webhook(event: str, workflow_id: int, topic: str):
         "event": event,
         "workflow_id": workflow_id,
         "topic": topic,
-        "dashboard_url": f"http://localhost:3000/workflows/{workflow_id}"
+        "dashboard_url": f"http://localhost:3000/workflows/{workflow_id}",
+        "post_url": post_url
     }
 
     try:
